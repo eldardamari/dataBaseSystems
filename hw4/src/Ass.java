@@ -41,7 +41,7 @@ public static void main(String[] args) {
                     createSchema(conn);}
 
             else if (command.equals("drop")){
-                    dropSchema();}
+                    dropSchema(conn);}
             
             else if (command.equals("load")){
                     String filename = in.next();
@@ -94,9 +94,9 @@ public static void main(String[] args) {
 public static void createSchema(Connection conn){
     System.out.println("in create schema");
     /*Connection conn = null;*/
-    Statement  persons = null;
+    Statement  stmt = null;
  try{   
-    persons = conn.createStatement();
+    stmt = conn.createStatement();
 
         String sql = "CREATE TABLE persons" +
             " (id INT NOT NULL PRIMARY KEY,"+
@@ -110,7 +110,7 @@ public static void createSchema(Connection conn){
             " capital_gain INT,"            + 
             " native_country VARCHAR(255));"; 
 
-        persons.executeUpdate(sql);
+        stmt.executeUpdate(sql);
         System.out.println("Created persons table sucssfully..");
         
         sql = "CREATE TABLE married_and_descendants" +
@@ -123,7 +123,7 @@ public static void createSchema(Connection conn){
             " FOREIGN KEY (id_relative)"             +
             " REFERENCES persons(id));";
 
-        persons.executeUpdate(sql);
+        stmt.executeUpdate(sql);
         System.out.println("Created Married and Descendants table sucssfully..");
         
         sql = "CREATE TABLE cars"                   +
@@ -132,7 +132,7 @@ public static void createSchema(Connection conn){
             " car_model VARCHAR(255),"              +
             " car_year INT);";
 
-        persons.executeUpdate(sql);
+        stmt.executeUpdate(sql);
         System.out.println("Created Cars table sucssfully..");
         
         sql = "CREATE TABLE cars_owned_by_people"   +
@@ -146,7 +146,7 @@ public static void createSchema(Connection conn){
             " FOREIGN KEY (car_id)"                 +
             " REFERENCES cars(car_id));";        
 
-        persons.executeUpdate(sql);
+        stmt.executeUpdate(sql);
         System.out.println("Created Cars Owned by People table sucssfully..");
  
  }catch(SQLException se){
@@ -154,8 +154,8 @@ public static void createSchema(Connection conn){
      se.printStackTrace();
  }catch(Exception e){
      //Handle errors for Class.forName
-     e.printStackTrace();
- }finally{
+     e.printStackTrace();}
+ /*}finally{
      //finally block used to close resources
      try{
          if(persons!=null)
@@ -168,14 +168,30 @@ public static void createSchema(Connection conn){
      }catch(SQLException se){
          se.printStackTrace();
      }//end finally try
- }//end try
+ }//end try*/
 }
 
 // Drop Schema
-public static void dropSchema(){
+public static void dropSchema(Connection conn){
     System.out.println("in drop");
-}
+    Statement  stmt = null;
 
+    try{
+        stmt = conn.createStatement();
+
+        String sql =" DROP TABLE IF EXISTS"     +
+                    " married_and_descendants," +
+                    " cars_owned_by_people, cars, persons;";
+        stmt.executeUpdate(sql);
+
+    }catch(SQLException se){
+        //Handle errors for JDBC
+        se.printStackTrace();
+    }catch(Exception e){
+        //Handle errors for Class.forName
+        e.printStackTrace();}
+
+}
 // Load a file to specific table
 public static void loadFilesToTabel(String file,String table){
     System.out.println("in load with arguments:");
