@@ -2,7 +2,6 @@ import java.sql.*;
 import java.io.Console;
 import java.util.Scanner;
 
-
 public class Ass {
 // JDBC driver name and database URL
 static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
@@ -11,6 +10,7 @@ static final String DB_URL = "jdbc:mysql://localhost:1234/dbs141_user15";
 //  Database credentials
 static final String USER = "dbs141_user15";
 static final String PASS = "dbsdbs";
+
 
 public static void main(String[] args) {
     Connection conn = null;
@@ -46,7 +46,7 @@ public static void main(String[] args) {
             else if (command.equals("load")){
                     String filename = in.next();
                     String tablename = in.next();
-                    loadFilesToTabel(filename,tablename);}
+                    loadFilesToTabel(filename,tablename,conn);}
             
             else if (command.equals("print")){
                     printTable(in.next());}
@@ -113,7 +113,7 @@ public static void createSchema(Connection conn){
         stmt.executeUpdate(sql);
         System.out.println("Created persons table sucssfully..");
         
-        sql = "CREATE TABLE married_and_descendants" +
+        sql = "CREATE TABLE relations" +
             " (id_person INT NOT NULL,"              +
             " id_relative INT NOT NULL,"             + 
             " relationship VARCHAR(255),"            +
@@ -124,6 +124,7 @@ public static void createSchema(Connection conn){
             " REFERENCES persons(id));";
 
         stmt.executeUpdate(sql);
+
         System.out.println("Created Married and Descendants table sucssfully..");
         
         sql = "CREATE TABLE cars"                   +
@@ -180,7 +181,7 @@ public static void dropSchema(Connection conn){
         stmt = conn.createStatement();
 
         String sql =" DROP TABLE IF EXISTS"     +
-                    " married_and_descendants," +
+                    " relations," +
                     " cars_owned_by_people, cars, persons;";
         stmt.executeUpdate(sql);
 
@@ -193,8 +194,9 @@ public static void dropSchema(Connection conn){
 
 }
 // Load a file to specific table
-public static void loadFilesToTabel(String file,String table){
+public static void loadFilesToTabel(String file,String table,Connection conn){
     System.out.println("in load with arguments:");
+    ReadCVS.parseFile(file,table,conn);
 }
 
 // Print specific table
@@ -218,3 +220,42 @@ public static void printQuery(String query){
 }
 
 }
+
+/*sql =   "CREATE TRIGGER Race " +
+"BEFORE INSERT ON Persons " +
+"FOR EACH ROW " +
+"BEGIN " +
+"IF NEW.Race not in ('White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black') " +
+"THEN " +
+"CALL wrong_race;" +
+" END IF;" +
+"IF NEW.Workclass not in ('Private', 'Self-emp-not-inc', 'Self-emc-inc', 'Federal-gov', 'Local-gov', " +
+"'State-gov', 'Without-pay', 'Never-worked') " +
+"THEN " +
+"CALL wrong_Workclass;" +
+" END IF;" +
+"IF NEW.Education not in ('Bachelors', 'Some-college', '11th', 'HS-grad', 'Prof-school', 'Assoc-acdm'" +
+"'Assoc-voc', '9th', '7th-8th', '12th', 'Masters', '1st-4th', '10th', 'Doctorate'," +
+"'5th-6th','Preschool') " +
+"THEN " +
+"CALL wrong_Education;" +
+" END IF;" +
+"IF NEW.Marital_status not in ('Married-civ-spouse','Divorced','Never-married','Seperated','Widowed'," +
+" 'Married-spouse-absent','Married-AF-spouse') " +
+"THEN " +
+"CALL wrong_Martial_Status;" +
+" END IF;" +
+"IF NEW.Sex not in ('Male', 'Female') " +
+"THEN " +
+"CALL wrong_Sex;" +
+" END IF;" +
+"IF NEW.Native_country not in ('United-States', 'Cambodia', 'England', 'Puerto-Rico', 'Canada', " +
+"'Germany', 'Outlying-US(Guam-USVI-etc)', 'India', 'Japan', 'Greece', 'South', 'China', 'Cuba', " +
+"'Iran', 'Honduras', 'Philippines', 'Italy', 'Poland', 'Jamaica', 'Vietnam', 'Mexico', 'Portugal', " +
+"'Ireland', 'France', 'Dominican-Republic', 'Laos', 'Ecuador', 'Taiwan', 'Haiti', 'Columbia', " +
+"'Hungary', 'Guatemala', 'Nicaragua', 'Scotland', 'Thailand', 'Yugoslavia', 'El-Salvador', " +
+"'Trinidad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands') " +
+"THEN " +
+"CALL wrong_Countrey;" +
+" END IF;" +
+"END;";*/
