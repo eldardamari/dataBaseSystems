@@ -111,6 +111,10 @@ public static void createSchema(Connection conn){
             " native_country VARCHAR(255));"; 
 
         stmt.executeUpdate(sql);
+
+        // persons trigger
+        activePersonTrigger(stmt);
+
         System.out.println("Created persons table sucssfully..");
         
         sql = "CREATE TABLE relations" +
@@ -124,6 +128,9 @@ public static void createSchema(Connection conn){
             " REFERENCES persons(id));";
 
         stmt.executeUpdate(sql);
+       
+        // relation trigger
+        activeRelationTrigger(stmt);
 
         System.out.println("Created Married and Descendants table sucssfully..");
         
@@ -148,6 +155,9 @@ public static void createSchema(Connection conn){
             " REFERENCES cars(car_id));";        
 
         stmt.executeUpdate(sql);
+        // cars_owned_by_people trigger
+        activeDateTrigger(stmt);
+
         System.out.println("Created Cars Owned by People table sucssfully..");
  
  }catch(SQLException se){
@@ -219,43 +229,110 @@ public static void printQuery(String query){
     System.out.println("in print query");
 }
 
-}
+// Trigger for persons table
+public static void activePersonTrigger(Statement stmt) {
 
-/*sql =   "CREATE TRIGGER Race " +
-"BEFORE INSERT ON Persons " +
-"FOR EACH ROW " +
-"BEGIN " +
-"IF NEW.Race not in ('White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black') " +
-"THEN " +
-"CALL wrong_race;" +
-" END IF;" +
-"IF NEW.Workclass not in ('Private', 'Self-emp-not-inc', 'Self-emc-inc', 'Federal-gov', 'Local-gov', " +
-"'State-gov', 'Without-pay', 'Never-worked') " +
-"THEN " +
-"CALL wrong_Workclass;" +
-" END IF;" +
-"IF NEW.Education not in ('Bachelors', 'Some-college', '11th', 'HS-grad', 'Prof-school', 'Assoc-acdm'" +
-"'Assoc-voc', '9th', '7th-8th', '12th', 'Masters', '1st-4th', '10th', 'Doctorate'," +
-"'5th-6th','Preschool') " +
-"THEN " +
-"CALL wrong_Education;" +
-" END IF;" +
-"IF NEW.Marital_status not in ('Married-civ-spouse','Divorced','Never-married','Seperated','Widowed'," +
-" 'Married-spouse-absent','Married-AF-spouse') " +
-"THEN " +
-"CALL wrong_Martial_Status;" +
-" END IF;" +
-"IF NEW.Sex not in ('Male', 'Female') " +
-"THEN " +
-"CALL wrong_Sex;" +
-" END IF;" +
-"IF NEW.Native_country not in ('United-States', 'Cambodia', 'England', 'Puerto-Rico', 'Canada', " +
-"'Germany', 'Outlying-US(Guam-USVI-etc)', 'India', 'Japan', 'Greece', 'South', 'China', 'Cuba', " +
-"'Iran', 'Honduras', 'Philippines', 'Italy', 'Poland', 'Jamaica', 'Vietnam', 'Mexico', 'Portugal', " +
-"'Ireland', 'France', 'Dominican-Republic', 'Laos', 'Ecuador', 'Taiwan', 'Haiti', 'Columbia', " +
-"'Hungary', 'Guatemala', 'Nicaragua', 'Scotland', 'Thailand', 'Yugoslavia', 'El-Salvador', " +
-"'Trinidad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands') " +
-"THEN " +
-"CALL wrong_Countrey;" +
-" END IF;" +
-"END;";*/
+    String sql =   "CREATE TRIGGER person_trigger " +
+        "BEFORE INSERT ON persons " +
+        "FOR EACH ROW " +
+        "BEGIN " +
+        "IF NEW.race not in ('White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black') " +
+        "THEN " +
+        "CALL Error_Wrong_Race_Name;" +
+        " END IF;" +
+        "IF NEW.workclass not in ('Private', 'Self-emp-not-inc', 'Self-emp-inc', 'Federal-gov', 'Local-gov', " +
+        "'State-gov', 'Without-pay', 'Never-worked') " +
+        "THEN " +
+        "CALL Error_Wrong_Workclass;" +
+        " END IF;" +
+        "IF NEW.education not in ('Bachelors', 'Some-college', '11th', 'HS-grad', 'Prof-school', 'Assoc-acdm'," +
+        "'Assoc-voc', '9th', '7th-8th', '12th', 'Masters', '1st-4th', '10th', 'Doctorate'," +
+        "'5th-6th','Preschool') " +
+        "THEN " +
+        "CALL Error_Wrong_Education;" +
+        " END IF;" +
+        "IF NEW.marital_status not in ('Married-civ-spouse','Divorced','Never-married','Separated','Widowed'," +
+        " 'Married-spouse-absent','Married-AF-spouse') " +
+        "THEN " +
+        "CALL Error_Wrong_Martial_Status;" +
+        " END IF;" +
+        "IF NEW.sex not in ('Male', 'Female') " +
+        "THEN " +
+        "CALL Error_Wrong_Sex;" +
+        " END IF;" +
+        "IF NEW.native_country not in ('United-States', 'Cambodia', 'England', 'Puerto-Rico', 'Canada', " +
+        "'Germany', 'Outlying-US(Guam-USVI-etc)', 'India', 'Japan', 'Greece', 'South', 'China', 'Cuba', " +
+        "'Iran', 'Honduras', 'Philippines', 'Italy', 'Poland', 'Jamaica', 'Vietnam', 'Mexico', 'Portugal', " +
+        "'Ireland', 'France', 'Dominican-Republic', 'Laos', 'Ecuador', 'Taiwan', 'Haiti', 'Columbia', " +
+        "'Hungary', 'Guatemala', 'Nicaragua', 'Scotland', 'Thailand', 'Yugoslavia', 'El-Salvador', " +
+        "'Trinidad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands') " +
+        "THEN " +
+        "CALL Error_Wrong_Countrey;" +
+        " END IF;" +
+        "END;";
+
+    try{ stmt.executeUpdate(sql);}
+    catch (SQLException e) {
+        System.out.println("TRIGGER FOR PERSONS " + e.getMessage());}
+}
+// Trigger for relations - child cant be older than his parents
+public static void activeRelationTrigger(Statement stmt) {
+
+    String sql =   "CREATE TRIGGER relation_trigger " +
+        "BEFORE INSERT ON relations " +
+        "FOR EACH ROW " +
+        "BEGIN " +
+        "DECLARE husbandSalary, wifeSalary, personAge, childAge INT; "+
+        "IF NEW.relationship NOT IN ('wife', 'husband', 'child') THEN "+
+        "CALL Error_Relationship_Name; "                        +
+        "END IF;"                                               +
+        "IF NEW.relationship in ('child') THEN "                +
+        "set @personAge = "                                     +
+        "(SELECT (age) FROM persons WHERE id=NEW.id_person); "  +
+        "set @childAge = "                                      +
+        "(SELECT (age) FROM persons WHERE id=NEW.id_relative); "+
+        "IF @personAge < @childAge THEN "                       +
+        "CALL Error_Parent_Age_Problem; "                       +
+        "END IF; END IF; "                                      +
+        "IF NEW.relationship in ('husband') THEN "              +
+        "set @husbandSalary = "                                 +
+        "(SELECT (capital_gain) FROM persons "                  +
+        "WHERE id=NEW.id_relative); "                           +
+        "set @husbandSalary = "                                 +
+        "(SELECT (capital_gain) FROM persons "                  +
+        "WHERE id=NEW.id_person); "                             +
+        "END IF; "                                              +
+        "IF NEW.relationship in ('wife') THEN "                 +
+        "set @husbandSalary = "                                 +
+        "(SELECT (capital_gain) FROM persons "                  +
+        "WHERE id=NEW.id_person); "                             +
+        "set @husbandSalary = "                                 +
+        "(SELECT (capital_gain) FROM persons "                  +
+        "WHERE id=NEW.id_relative); "                           +
+        "END IF; "                                              +
+        "IF @husbandSalary > @wifeSalary THEN "                 +
+        "CALL Error_Husband_Cant_Earn_More_Than_His_Wife; "     +
+        "END IF; "                                              +
+        "END;";
+
+    try{ stmt.executeUpdate(sql);}
+    catch (SQLException e) {
+        System.out.println("TRIGGER FOR relationship -  " + e.getMessage());}
+}
+// Trigger for Cars Owned By People - Date can't be more than today's date.
+public static void activeDateTrigger(Statement stmt) {
+
+    String sql =   "CREATE TRIGGER date_trigger "   +
+        "BEFORE INSERT ON cars_owned_by_people "    +
+        "FOR EACH ROW "                             +
+        "BEGIN "                                    +
+        "IF NEW.date_purchased > CURDATE() THEN "   +
+        "CALL Error_Date_Is_Not_Vaild; "            +
+        "END IF; "                                  +
+        "END;";
+
+    try{ stmt.executeUpdate(sql);}
+    catch (SQLException e) {
+        System.out.println("TRIGGER FOR Cars Owned by People -  " + e.getMessage());}
+}
+}
