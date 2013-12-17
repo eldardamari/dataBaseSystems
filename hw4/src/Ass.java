@@ -49,7 +49,7 @@ public static void main(String[] args) {
                     loadFilesToTabel(filename,tablename,conn);}
             
             else if (command.equals("print")){
-                    printTable(in.next());}
+                    printTable(in.next(),conn);}
 
             else if (command.equals("sql")){
                     sqlQuery(in.next());}
@@ -210,8 +210,113 @@ public static void loadFilesToTabel(String file,String table,Connection conn){
 }
 
 // Print specific table
-public static void printTable(String table){
+public static void printTable(String table,Connection conn){
+
     System.out.println("in print tablw");
+    try {
+    Statement st = conn.createStatement();
+    ResultSet rs = st.executeQuery("SELECT * FROM " + table + ";");
+    ResultSetMetaData rsmd = rs.getMetaData();
+    int table_number = 0;
+    boolean header = false;
+    int columnsNumber = rsmd.getColumnCount();
+
+    if (table.equals("cars"))                   { table_number = 1;}
+    if (table.equals("persons"))                { table_number = 2;}
+    if (table.equals("cars_owned_by_people"))   { table_number = 3;}
+    if (table.equals("relations"))              { table_number = 4;}
+
+    while (rs.next()) {
+
+        switch(table_number){
+            case 1:
+                if(!header) {
+                    System.out.format("| %-8s | %-20s | %-15s | %-8s |", 
+                            rsmd.getColumnName(1).toUpperCase(),
+                            rsmd.getColumnName(2).toUpperCase(),
+                            rsmd.getColumnName(3).toUpperCase(),
+                            rsmd.getColumnName(4).toUpperCase());
+
+                    System.out.println();//Move to the next line to print the next row.           
+                    System.out.println("----------------------------------------"+
+                            "------------------------");//Move to the next line to print the next row.           
+                    header = true;
+                }
+                System.out.format("| %-8s | %-20s | %-15s | %-8s |", rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4)); //Print one element of a row
+                System.out.println();//Move to the next line to print the next row.           
+                break;
+            case 2:
+                if(!header){
+                    System.out.format("| %-4s | %-4s | %-16s | %-12s | %-13s | %-21s | %-18s | %-6s | %-12s | %-16s |", 
+                            rsmd.getColumnName(1).toUpperCase(),
+                            rsmd.getColumnName(2).toUpperCase(),
+                            rsmd.getColumnName(3).toUpperCase(),
+                            rsmd.getColumnName(4).toUpperCase(),
+                            rsmd.getColumnName(5).toUpperCase(),
+                            rsmd.getColumnName(6).toUpperCase(),
+                            rsmd.getColumnName(7).toUpperCase(),
+                            rsmd.getColumnName(8).toUpperCase(),
+                            rsmd.getColumnName(9).toUpperCase(),
+                            rsmd.getColumnName(10).toUpperCase());
+
+                    System.out.println();//Move to the next line to print the next row.           
+                    System.out.println("-------------------------------------------"+
+                            "-------------------------------------------");//Move to the next line to print the next row.           
+                    header = true;
+                }
+                System.out.format("| %4s | %4s | %-16s | %-12s | %13s | %-21s | %-18s | %-6s | %12s | %-16s |", 
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7),
+                        rs.getString(8),
+                        rs.getString(9),
+                        rs.getString(10));
+                System.out.println();//Move to the next line to print the next row.           
+                break;
+            case 3:
+                if(!header){
+                    System.out.format("| %9s | %6s | %-6s | %-14s |", 
+                            rsmd.getColumnName(1).toUpperCase(),
+                            rsmd.getColumnName(2).toUpperCase(),
+                            rsmd.getColumnName(3).toUpperCase(),
+                            rsmd.getColumnName(4).toUpperCase());
+
+                    System.out.println();//Move to the next line to print the next row.           
+                    System.out.println("-------------------------------------------");
+                    header = true;
+                }
+                System.out.format("| %9s | %6s | %-6s | %-14s |", 
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4));
+                System.out.println();//Move to the next line to print the next row.           
+                break;
+            case 4:
+                if(!header){
+                    System.out.format("| %9s | %11s | %-12s |", 
+                            rsmd.getColumnName(1).toUpperCase(),
+                            rsmd.getColumnName(2).toUpperCase(),
+                            rsmd.getColumnName(3).toUpperCase());
+
+                    System.out.println();//Move to the next line to print the next row.           
+                    System.out.println("----------------------------------------");
+                    header = true;
+                }
+                System.out.format("| %9s | %11s | %-12s |", 
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3));
+                System.out.println();//Move to the next line to print the next row.           
+                break;
+        }
+    }
+    } catch (SQLException e){
+        System.out.println("In Print Table Exception - " + e.getMessage());}
 }
 
 // SQL Query
