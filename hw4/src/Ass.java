@@ -33,9 +33,11 @@ public static void main(String[] args) {
         while(true){
 
             System.out.print("> ");
-            Scanner in = new Scanner(System.in).useDelimiter("\\s");
+            Scanner in = new Scanner(System.in).useDelimiter(";");
+            String [] row = in.next().split("\\s");
+
+            String command = row[0];
           
-            String command = in.next();
 
             if (command.equals("create")){
                     createSchema(conn);}
@@ -44,15 +46,20 @@ public static void main(String[] args) {
                     dropSchema(conn);}
             
             else if (command.equals("load")){
-                    String filename = in.next();
-                    String tablename = in.next();
+                    String filename = row[1];
+                    String tablename = row[2];
                     loadFilesToTabel(filename,tablename,conn);}
             
             else if (command.equals("print")){
-                    printTable(in.next(),conn);}
+                    printTable(row[1],conn);}
 
             else if (command.equals("sql")){
-                    sqlQuery(in.next());}
+                    String sqlCommand = "";
+                        for(int i=1 ; i < row.length ; i++){
+                            if (i==row.length-1)   {sqlCommand +=row[i] + ";";}
+                            else        {sqlCommand += row[i] + " ";}
+                        }
+                    sqlQuery(sqlCommand,conn);}
 
             else if (command.equals("report")){
                     printReport(in.next());}
@@ -212,7 +219,6 @@ public static void loadFilesToTabel(String file,String table,Connection conn){
 // Print specific table
 public static void printTable(String table,Connection conn){
 
-    System.out.println("in print tablw");
     try {
     Statement st = conn.createStatement();
     ResultSet rs = st.executeQuery("SELECT * FROM " + table + ";");
@@ -320,8 +326,31 @@ public static void printTable(String table,Connection conn){
 }
 
 // SQL Query
-public static void sqlQuery(String query){
+public static void sqlQuery(String query,Connection conn){
     System.out.println("in sql query");
+    try {
+    Statement st = conn.createStatement();
+    ResultSet rs = st.executeQuery(query);
+    ResultSetMetaData rsmd = rs.getMetaData();
+    int table_number = 0;
+    boolean header = false;
+    int columnsNumber = rsmd.getColumnCount();
+    int i = 0;
+    System.out.println(columnsNumber);
+
+    for (i=1 ; i <=columnsNumber ; i++){
+        System.out.format("%-15s",rsmd.getColumnName(i));
+    }
+    System.out.println();
+
+    while (rs.next()) {
+        for (i=1 ; i <=columnsNumber ; i++){
+            System.out.format("%-15s",rs.getString(i));
+        }
+        System.out.println();
+    }
+    } catch (SQLException e){
+        System.out.println("In SQL QUERY Exception - " + e.getMessage());}
 }
 
 // Print Report
