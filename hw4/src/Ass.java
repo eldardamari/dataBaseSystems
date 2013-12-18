@@ -62,7 +62,7 @@ public static void main(String[] args) {
                     sqlQuery(sqlCommand,conn);}
 
             else if (command.equals("report")){
-                    printReport(in.next());}
+                    printReport(row[1],conn);}
 
             else if (command.equals("query")){
                     printQuery(in.next());}
@@ -248,7 +248,7 @@ public static void printTable(String table,Connection conn){
                             "------------------------");//Move to the next line to print the next row.           
                     header = true;
                 }
-                System.out.format("| %-8s | %-20s | %-15s | %-8s |", rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4)); //Print one element of a row
+                System.out.format("| %8s | %-20s | %-15s | %8s |", rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4)); //Print one element of a row
                 System.out.println();//Move to the next line to print the next row.           
                 break;
             case 2:
@@ -335,17 +335,20 @@ public static void sqlQuery(String query,Connection conn){
     int table_number = 0;
     boolean header = false;
     int columnsNumber = rsmd.getColumnCount();
-    int i = 0;
-    System.out.println(columnsNumber);
+    int i,padd = 0;
+    String[] paddings = new String[columnsNumber];
 
-    for (i=1 ; i <=columnsNumber ; i++){
-        System.out.format("%-15s",rsmd.getColumnName(i));
+    for (i=1,padd = 0; i <=columnsNumber ; i++, padd++){
+
+        int number = new String(rsmd.getColumnName(i)).length() + 5;
+        paddings[padd] = new String("|%-"+ new Integer(number).toString()+"s");
+        System.out.format(paddings[padd],rsmd.getColumnName(i).toUpperCase());
     }
     System.out.println();
 
     while (rs.next()) {
-        for (i=1 ; i <=columnsNumber ; i++){
-            System.out.format("%-15s",rs.getString(i));
+        for (i=1,padd=0 ; i <=columnsNumber ; i++,padd++){
+            System.out.format(paddings[padd],rs.getString(i));
         }
         System.out.println();
     }
@@ -354,8 +357,39 @@ public static void sqlQuery(String query,Connection conn){
 }
 
 // Print Report
-public static void printReport(String report){
-    System.out.println("in print report");
+public static void printReport(String report,Connection conn){
+
+    String query = "";
+    int reportNumber = Integer.parseInt(report);
+
+    switch(reportNumber){
+
+        case 1:
+            String CHILDRENS =  "(SELECT id,id_relative,relationship FROM " +
+                "(persons NATURAL JOIN relations) WHERE "   +
+                "(id=id_person AND relationship='child'))";
+
+            query    =   "SELECT T.id AS parent,S.id,S.age,S.workclASs,"+
+                "S.education,S.education_num,S.marital_status,"+
+                "S.race,S.sex,S.capital_gain,S.native_country "+
+                "FROM " + CHILDRENS +
+                "AS T join persons S on (T.id_relative = S.id) "+
+                "ORDER BY parent,age desc;";
+            break;
+        case 2:
+            query = "(SELECT * FROM (cars_owned_by_people NATURAL JOIN cars) "+
+                    "ORDER BY person_id,date_purchased DESC);";
+            break;
+        case 3:
+            String MOMS_AND_KIDS =  "(SELECT id, COUNT(id_relative) as numOfKids"+
+                " FROM persons NATURAL JOIN relations "+
+                "WHERE (sex='Female' AND id=id_person AND native_country != 'NULL') GROUP BY id)";
+
+            query = "SELECT native_country ,AVG(numOfKids) FROM " + MOMS_AND_KIDS +
+                " as T NATURAL JOIN persons AS S WHERE (T.id=S.id) GROUP BY native_country;";
+            break;
+    }
+            sqlQuery(query,conn);
 }
 
 // Print Query
