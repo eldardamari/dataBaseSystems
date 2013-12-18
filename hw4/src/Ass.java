@@ -65,7 +65,7 @@ public static void main(String[] args) {
                     printReport(row[1],conn);}
 
             else if (command.equals("query")){
-                    printQuery(in.next());}
+                    printQuery(row[1],conn);}
             else {
                 System.out.println("Error: Bad input, please try again");}
             
@@ -327,7 +327,6 @@ public static void printTable(String table,Connection conn){
 
 // SQL Query
 public static void sqlQuery(String query,Connection conn){
-    System.out.println("in sql query");
     try {
     Statement st = conn.createStatement();
     ResultSet rs = st.executeQuery(query);
@@ -393,8 +392,52 @@ public static void printReport(String report,Connection conn){
 }
 
 // Print Query
-public static void printQuery(String query){
-    System.out.println("in print query");
+public static void printQuery(String number,Connection conn){
+    String query = "";
+    int qNum = Integer.parseInt(number);
+
+    switch(qNum){
+
+        case 1:
+            query = "(SELECT id FROM persons ORDER BY "+
+                                "capital_gain DESC LIMIT 1);";
+
+            break;
+
+
+        case 2:
+            query = "(SELECT id FROM (SELECT id, count(id_relative) AS kids "+
+                "FROM persons NATURAL JOIN relations WHERE id = id_person AND "+
+                "relationship='child' GROUP BY id ORDER BY kids DESC LIMIT 1) AS T);";
+
+            break;
+        case 3:
+            String MOMS_AND_KIDS =  "(SELECT id, COUNT(id_relative) as numOfKids"+
+                " FROM persons NATURAL JOIN relations "+
+                "WHERE (sex='Female' AND id=id_person AND native_country != 'NULL') GROUP BY id)";
+
+            query = "SELECT native_country ,AVG(numOfKids) FROM " + MOMS_AND_KIDS +
+                " as T NATURAL JOIN persons AS S WHERE (T.id=S.id) GROUP BY native_country;";
+            break;
+    }
+            printScalar(query,qNum,conn);
+}
+// Send query to sever and printing scalar
+public static void printScalar(String query,int qNum, Connection conn){
+    try {
+    Statement st = conn.createStatement();
+    ResultSet rs = st.executeQuery(query);
+    ResultSetMetaData rsmd = rs.getMetaData();
+    int columnsNumber = rsmd.getColumnCount();
+
+    while(rs.next()){
+    if(qNum == 1) {System.out.println("The richest men in db is : " + rs.getString(1));}
+    if(qNum == 2) {System.out.println("The person having the max childern : " + rs.getString(1));}
+    }
+
+    }
+     catch (SQLException e){
+        System.out.println("In SQL QUERY Exception - " + e.getMessage());}
 }
 
 // Trigger for persons table
