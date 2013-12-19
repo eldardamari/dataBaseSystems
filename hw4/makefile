@@ -1,6 +1,6 @@
 main:
-	javac Main.java ReadCVS.java
-	java -cp .:mysql-connector-java-5.1.27-bin.jar:jline.jar Main
+	javac ./src/Main.java ./src/ReadCVS.java
+	java -cp .:./src/mysql-connector-java-5.1.27-bin.jar:./src/ojdbc.jar:./src/ Main
 
 clean:
-	rm Main.class ReadCVS.class
+	rm *.class
