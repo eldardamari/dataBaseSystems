@@ -15,24 +15,23 @@ static final String PASS = "dbsdbs";
 public static void main(String[] args) {
     Connection conn = null;
     Statement stmt  = null;
-    System.out.println("Hello!");
+    System.out.println("**************************************************************");
+    System.out.println("** Welcome to MySql Server Terminal - Data Base Systems 141 **\n");
 
     try{
         //STEP 2: Register JDBC driver
         Class.forName("com.mysql.jdbc.Driver");
 
         //STEP 3: Open a connection
-        System.out.println("Connecting to a selected database...");
+        System.out.println("**Connecting to a selected database = " + DB_URL);
         conn = DriverManager.getConnection(DB_URL, USER, PASS);
-        System.out.println("Connected database successfully...");
-
-        //STEP 4: Execute a query
-        System.out.println("Creating table in given database...");
+        System.out.println("**Connected database successfully...");
+    System.out.println("**************************************************************");
 
         // Infinte loop representing command line
         while(true){
 
-            System.out.print("> ");
+            System.out.print("mysql> ");
             Scanner in = new Scanner(System.in).useDelimiter(";");
             String [] row = in.next().split("\\s");
 
@@ -40,38 +39,44 @@ public static void main(String[] args) {
           
 
             if (command.equals("create")){
-                    createSchema(conn);}
+                createSchema(conn);}
 
             else if (command.equals("drop")){
-                    dropSchema(conn);}
-            
+                dropSchema(conn);}
+
             else if (command.equals("load")){
-                    String filename = row[1];
-                    String tablename = row[2];
-                    loadFilesToTabel(filename,tablename,conn);}
-            
+                String filename = row[1];
+                String tablename = row[2];
+                loadFilesToTabel(filename,tablename,conn);}
+
             else if (command.equals("print")){
-                    printTable(row[1],conn);}
+                printTable(row[1],conn);}
 
             else if (command.equals("sql")){
-                    String sqlCommand = "";
-                        for(int i=1 ; i < row.length ; i++){
-                            if (i==row.length-1)   {sqlCommand +=row[i] + ";";}
-                            else        {sqlCommand += row[i] + " ";}
-                        }
-                    sqlQuery(sqlCommand,conn);}
+                String sqlCommand = "";
+                for(int i=1 ; i < row.length ; i++){
+                    if (i==row.length-1)   
+                    {sqlCommand +=row[i] + ";";}
+                    else        
+                    {sqlCommand += row[i] + " ";}
+                }
+                sqlQuery(sqlCommand,conn);}
 
             else if (command.equals("report")){
-                    printReport(row[1],conn);}
+                printReport(row[1],conn);}
 
             else if (command.equals("query")){
-                    printQuery(row[1],conn);}
+                printQuery(row[1],conn);}
+
+            else if (command.equals("exit")){
+                conn.close();
+            }
             else {
                 System.out.println("Error: Bad input, please try again");}
-            
+
             in.reset();
-            }
         }
+    }
 
     catch(SQLException se){
         //Handle errors for JDBC
@@ -99,7 +104,6 @@ public static void main(String[] args) {
 
 // Create Schema
 public static void createSchema(Connection conn){
-    System.out.println("in create schema");
     /*Connection conn = null;*/
     Statement  stmt = null;
  try{   
@@ -122,7 +126,7 @@ public static void createSchema(Connection conn){
         // persons trigger
         activePersonTrigger(stmt);
 
-        System.out.println("Created persons table sucssfully..");
+        System.out.println("Created persons table & triggers - sucssfully..");
         
         sql = "CREATE TABLE relations" +
             " (id_person INT NOT NULL,"              +
@@ -139,7 +143,7 @@ public static void createSchema(Connection conn){
         // relation trigger
         activeRelationTrigger(stmt);
 
-        System.out.println("Created Married and Descendants table sucssfully..");
+        System.out.println("Created Married and Descendants table & triggers - sucssfully..");
         
         sql = "CREATE TABLE cars"                   +
             " (car_id INT NOT NULL PRIMARY KEY,"    +
@@ -148,7 +152,8 @@ public static void createSchema(Connection conn){
             " car_year INT);";
 
         stmt.executeUpdate(sql);
-        System.out.println("Created Cars table sucssfully..");
+
+        System.out.println("Created Cars table - sucssfully..");
         
         sql = "CREATE TABLE cars_owned_by_people"   +
             " (person_id INT NOT NULL,"             +
@@ -165,33 +170,17 @@ public static void createSchema(Connection conn){
         // cars_owned_by_people trigger
         activeDateTrigger(stmt);
 
-        System.out.println("Created Cars Owned by People table sucssfully..");
+        System.out.println("Created Cars Owned by People table & triggers - sucssfully..");
  
  }catch(SQLException se){
      //Handle errors for JDBC
      se.printStackTrace();
  }catch(Exception e){
-     //Handle errors for Class.forName
      e.printStackTrace();}
- /*}finally{
-     //finally block used to close resources
-     try{
-         if(persons!=null)
-             conn.close();
-     }catch(SQLException se){
-     }// do nothing
-     try{
-         if(conn!=null)
-             conn.close();
-     }catch(SQLException se){
-         se.printStackTrace();
-     }//end finally try
- }//end try*/
 }
 
 // Drop Schema
 public static void dropSchema(Connection conn){
-    System.out.println("in drop");
     Statement  stmt = null;
 
     try{
@@ -206,13 +195,13 @@ public static void dropSchema(Connection conn){
         //Handle errors for JDBC
         se.printStackTrace();
     }catch(Exception e){
-        //Handle errors for Class.forName
         e.printStackTrace();}
 
 }
 // Load a file to specific table
-public static void loadFilesToTabel(String file,String table,Connection conn){
-    System.out.println("in load with arguments:");
+public static void loadFilesToTabel(String file,
+                                    String table,
+                                    Connection conn){
     ReadCVS.parseFile(file,table,conn);
 }
 
@@ -337,6 +326,7 @@ public static void sqlQuery(String query,Connection conn){
     int i,padd = 0;
     String[] paddings = new String[columnsNumber];
 
+    // Printing with padding accurding to column name length + 5
     for (i=1,padd = 0; i <=columnsNumber ; i++, padd++){
 
         int number = new String(rsmd.getColumnName(i)).length() + 5;
@@ -345,6 +335,7 @@ public static void sqlQuery(String query,Connection conn){
     }
     System.out.println();
 
+    // Printing table data
     while (rs.next()) {
         for (i=1,padd=0 ; i <=columnsNumber ; i++,padd++){
             System.out.format(paddings[padd],rs.getString(i));
@@ -355,10 +346,11 @@ public static void sqlQuery(String query,Connection conn){
         System.out.println("In SQL QUERY Exception - " + e.getMessage());}
 }
 
-// Print Report
+// Print Reports Options:1,2,3,4
 public static void printReport(String report,Connection conn){
 
     String query = "";
+    try{
     int reportNumber = Integer.parseInt(report);
 
     switch(reportNumber){
@@ -387,29 +379,31 @@ public static void printReport(String report,Connection conn){
             query = "SELECT native_country ,AVG(numOfKids) FROM " + MOMS_AND_KIDS +
                 " as T NATURAL JOIN persons AS S WHERE (T.id=S.id) GROUP BY native_country;";
             break;
+        default:
+            System.out.println("In Print Report - Error in report number");
+            return;
     }
             sqlQuery(query,conn);
+    }catch (Exception e){
+            System.out.println("In Print Report - Error in report number" + 
+                                e.getMessage());}
 }
 
-// Print Query
+// Print Query Options: 1,2,3(like report),4,5
 public static void printQuery(String number,Connection conn){
     String query = "";
+    try{
     int qNum = Integer.parseInt(number);
 
     switch(qNum){
-
         case 1:
             query = "(SELECT id FROM persons ORDER BY "+
                                 "capital_gain DESC LIMIT 1);";
-
             break;
-
-
         case 2:
             query = "(SELECT id FROM (SELECT id, count(id_relative) AS kids "+
                 "FROM persons NATURAL JOIN relations WHERE id = id_person AND "+
                 "relationship='child' GROUP BY id ORDER BY kids DESC LIMIT 1) AS T);";
-
             break;
         case 3:
             String MOMS_AND_KIDS =  "(SELECT id, COUNT(id_relative) as numOfKids"+
@@ -422,7 +416,6 @@ public static void printQuery(String number,Connection conn){
             return;
 
         case 4:
-
             String PARENTS_KIDS = "(SELECT id,count(id_relative) AS kids FROM"+ 
                 "(SELECT id FROM persons join cars_owned_by_people where "+
                 "id=person_id order by car_id desc) AS T";
@@ -434,15 +427,23 @@ public static void printQuery(String number,Connection conn){
         case 5:
             String BLACK_MERCEDES = "(SELECT native_country FROM persons NATURAL JOIN "     +
                                     "cars_owned_by_people NATURAL JOIN cars "       +
-                                    "WHERE id=person_id AND car_manufacturer='VOLVO' "+
-                                    "AND color='blue') AS T ";
+                                    "WHERE id=person_id AND car_manufacturer='MERCEDES' "+
+                                    "AND color='black') AS T ";
 
             query = "select native_country, count(native_country) as cars from " +
                     BLACK_MERCEDES + "group by native_country order by cars desc limit 1";
+            break;
+        default:
+            System.out.println("In Print Query - Bad input");
+            return;
     }
             printScalar(query,qNum,conn);
+    }catch (Exception e){
+            System.out.println("In Print Query - Error in report number" + 
+                                e.getMessage());}
 }
-// Send query to sever and printing scalar
+
+// Send query to sever and printing scalar result
 public static void printScalar(String query,int qNum, Connection conn){
     try {
     Statement st = conn.createStatement();
@@ -452,17 +453,20 @@ public static void printScalar(String query,int qNum, Connection conn){
 
     while(rs.next()){
         if(qNum == 1) {System.out.println("The richest men in db is : " + rs.getInt(1));}
+
         if(qNum == 2) {System.out.println("The person having the max childern : " + rs.getInt(1));}
+
         if(qNum == 4) {System.out.println("The average number of children for people"+
                                           "owning more than one car : " + rs.getFloat(1));}
-        if(qNum == 5) {System.out.println("The country of birth having the "    +
-                                          "maximum number of people owning a black mercedes : " +
-                                        rs.getString(1));}
         }
-
+        if(qNum == 5 && !rs.next()) {System.out.println("The country of birth having the "    +
+                "maximum number of people owning a black mercedes : None");}
+        else if (qNum == 5) {System.out.println("The country of birth having the "    +
+                "maximum number of people owning a black mercedes : " +
+                rs.getString(1));}
     }
      catch (SQLException e){
-        System.out.println("In SQL QUERY Exception - " + e.getMessage());}
+        System.out.println("In Print Scalar Exception - " + e.getMessage());}
 }
 
 // Trigger for persons table
@@ -501,7 +505,7 @@ public static void activePersonTrigger(Statement stmt) {
         "'Iran', 'Honduras', 'Philippines', 'Italy', 'Poland', 'Jamaica', 'Vietnam', 'Mexico', 'Portugal', " +
         "'Ireland', 'France', 'Dominican-Republic', 'Laos', 'Ecuador', 'Taiwan', 'Haiti', 'Columbia', " +
         "'Hungary', 'Guatemala', 'Nicaragua', 'Scotland', 'Thailand', 'Yugoslavia', 'El-Salvador', " +
-        "'Trinidad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands') " +
+        "'Trinadad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands') " +
         "THEN " +
         "CALL Error_Wrong_Countrey;" +
         " END IF;" +
@@ -509,8 +513,9 @@ public static void activePersonTrigger(Statement stmt) {
 
     try{ stmt.executeUpdate(sql);}
     catch (SQLException e) {
-        System.out.println("TRIGGER FOR PERSONS " + e.getMessage());}
+        System.out.println("In Trigger For Persons -  " + e.getMessage());}
 }
+
 // Trigger for relations - child cant be older than his parents
 public static void activeRelationTrigger(Statement stmt) {
 
@@ -527,7 +532,7 @@ public static void activeRelationTrigger(Statement stmt) {
         "(SELECT (age) FROM persons WHERE id=NEW.id_person); "  +
         "set @childAge = "                                      +
         "(SELECT (age) FROM persons WHERE id=NEW.id_relative); "+
-        "IF @personAge < @childAge THEN "                       +
+        "IF @personAge <= @childAge THEN "                       +
         "CALL Error_Parent_Age_Problem; "                       +
         "END IF; END IF; "                                      +
         "IF NEW.relationship in ('husband') THEN "              +
@@ -553,8 +558,9 @@ public static void activeRelationTrigger(Statement stmt) {
 
     try{ stmt.executeUpdate(sql);}
     catch (SQLException e) {
-        System.out.println("TRIGGER FOR relationship -  " + e.getMessage());}
+        System.out.println("In Trigger Of Relations -  " + e.getMessage());}
 }
+
 // Trigger for Cars Owned By People - Date can't be more than today's date.
 public static void activeDateTrigger(Statement stmt) {
 
@@ -569,6 +575,6 @@ public static void activeDateTrigger(Statement stmt) {
 
     try{ stmt.executeUpdate(sql);}
     catch (SQLException e) {
-        System.out.println("TRIGGER FOR Cars Owned by People -  " + e.getMessage());}
+        System.out.println("In Trigger Cars Owned by People -  " + e.getMessage());}
 }
 }
