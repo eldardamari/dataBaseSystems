@@ -418,7 +418,27 @@ public static void printQuery(String number,Connection conn){
 
             query = "SELECT native_country ,AVG(numOfKids) FROM " + MOMS_AND_KIDS +
                 " as T NATURAL JOIN persons AS S WHERE (T.id=S.id) GROUP BY native_country;";
+            sqlQuery(query,conn);
+            return;
+
+        case 4:
+
+            String PARENTS_KIDS = "(SELECT id,count(id_relative) AS kids FROM"+ 
+                "(SELECT id FROM persons join cars_owned_by_people where "+
+                "id=person_id order by car_id desc) AS T";
+
+            query = "(SELECT avg(kids) FROM" + PARENTS_KIDS +
+                " NATURAL JOIN relations where id=id_person and "+
+                "relationship='child' group by id) AS S);";
             break;
+        case 5:
+            String BLACK_MERCEDES = "(SELECT native_country FROM persons NATURAL JOIN "     +
+                                    "cars_owned_by_people NATURAL JOIN cars "       +
+                                    "WHERE id=person_id AND car_manufacturer='VOLVO' "+
+                                    "AND color='blue') AS T ";
+
+            query = "select native_country, count(native_country) as cars from " +
+                    BLACK_MERCEDES + "group by native_country order by cars desc limit 1";
     }
             printScalar(query,qNum,conn);
 }
@@ -431,9 +451,14 @@ public static void printScalar(String query,int qNum, Connection conn){
     int columnsNumber = rsmd.getColumnCount();
 
     while(rs.next()){
-    if(qNum == 1) {System.out.println("The richest men in db is : " + rs.getString(1));}
-    if(qNum == 2) {System.out.println("The person having the max childern : " + rs.getString(1));}
-    }
+        if(qNum == 1) {System.out.println("The richest men in db is : " + rs.getInt(1));}
+        if(qNum == 2) {System.out.println("The person having the max childern : " + rs.getInt(1));}
+        if(qNum == 4) {System.out.println("The average number of children for people"+
+                                          "owning more than one car : " + rs.getFloat(1));}
+        if(qNum == 5) {System.out.println("The country of birth having the "    +
+                                          "maximum number of people owning a black mercedes : " +
+                                        rs.getString(1));}
+        }
 
     }
      catch (SQLException e){
