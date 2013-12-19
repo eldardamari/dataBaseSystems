@@ -2,7 +2,7 @@ import java.sql.*;
 import java.io.Console;
 import java.util.Scanner;
 
-public class Ass {
+public class Main {
 // JDBC driver name and database URL
 static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 static final String DB_URL = "jdbc:mysql://localhost:1234/dbs141_user15";
@@ -70,6 +70,7 @@ public static void main(String[] args) {
 
             else if (command.equals("exit")){
                 conn.close();
+                return;
             }
             else {
                 System.out.println("Error: Bad input, please try again");}
@@ -121,7 +122,8 @@ public static void createSchema(Connection conn){
             " capital_gain INT,"            + 
             " native_country VARCHAR(255));"; 
 
-        stmt.executeUpdate(sql);
+        try{ stmt.executeUpdate(sql);} catch (SQLException e){
+            System.out.println(e.getMessage());}
 
         // persons trigger
         activePersonTrigger(stmt);
@@ -138,7 +140,8 @@ public static void createSchema(Connection conn){
             " FOREIGN KEY (id_relative)"             +
             " REFERENCES persons(id));";
 
-        stmt.executeUpdate(sql);
+        try{ stmt.executeUpdate(sql);} catch (SQLException e){
+            System.out.println(e.getMessage());}
        
         // relation trigger
         activeRelationTrigger(stmt);
@@ -151,7 +154,8 @@ public static void createSchema(Connection conn){
             " car_model VARCHAR(255),"              +
             " car_year INT);";
 
-        stmt.executeUpdate(sql);
+        try{ stmt.executeUpdate(sql);} catch (SQLException e){
+            System.out.println(e.getMessage());}
 
         System.out.println("Created Cars table - sucssfully..");
         
@@ -166,10 +170,10 @@ public static void createSchema(Connection conn){
             " FOREIGN KEY (car_id)"                 +
             " REFERENCES cars(car_id));";        
 
-        stmt.executeUpdate(sql);
+        try{ stmt.executeUpdate(sql);} catch (SQLException e){
+            System.out.println(e.getMessage());}
         // cars_owned_by_people trigger
         activeDateTrigger(stmt);
-
         System.out.println("Created Cars Owned by People table & triggers - sucssfully..");
  
  }catch(SQLException se){

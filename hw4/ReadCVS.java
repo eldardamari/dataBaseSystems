@@ -14,7 +14,6 @@ public class ReadCVS {
 
         ReadCVS obj = new ReadCVS();
 
-        System.out.println("in runn!!");
         String csvFile = "../" + fileName;
         BufferedReader br = null;
         String line = "";
@@ -56,8 +55,6 @@ public class ReadCVS {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Done");
     }
 
     public static void insertCars( PreparedStatement pStmnt,
@@ -65,8 +62,6 @@ public class ReadCVS {
             Connection conn,
             String table,
             String cvsSplitBy) throws SQLException, IOException{
-
-        System.out.println("IN INSERT PROGRESS");
 
         String insertCarsTable = "INSERT INTO " + table +
             " (car_id, car_manufacturer, car_model, car_year)"+
@@ -77,6 +72,7 @@ public class ReadCVS {
             System.out.println(e.getMessage());}
 
         String line = "";
+        int i = 1;
 
         while ((line = br.readLine()) != null) {
 
@@ -98,6 +94,7 @@ public class ReadCVS {
                 if(!cars[3].equals("?")){pStmnt.setInt(4,Integer.parseInt(cars[3]));}
                 else                    {pStmnt.setNull(4,Types.INTEGER);}
 
+            System.out.println(i++);
                 // execute insert SQL stetement
                 pStmnt.executeUpdate();}
             catch (SQLException e) {
@@ -124,7 +121,6 @@ public class ReadCVS {
         int i = 1; 
         while ((line = br.readLine()) != null) {
             line.replaceAll("\\s+","");
-            /*line.trim();*/
             String[] persons = line.split(cvsSplitBy);
 
             System.out.println(i++);
@@ -133,16 +129,6 @@ public class ReadCVS {
                 persons[in] = persons[in].trim();}
 
             try{
-                /*pStmnt.setInt(1,Integer.parseInt(persons[0]));
-                  pStmnt.setInt(2,Integer.parseInt(persons[1]));
-                  pStmnt.setString(3,persons[2]);
-                  pStmnt.setString(4,persons[3]);
-                  pStmnt.setInt(5,Integer.parseInt(persons[4]));
-                  pStmnt.setString(6,persons[5]);
-                  pStmnt.setString(7,persons[6]);
-                  pStmnt.setString(8,persons[7]);
-                  pStmnt.setInt(9,Integer.parseInt(persons[8]));
-                  pStmnt.setString(10,persons[9]);*/
 
                 if(!persons[0].equals("?")){pStmnt.setInt(1,Integer.parseInt(persons[0]));}
                 else                    {pStmnt.setNull(1,Types.INTEGER);}
@@ -197,9 +183,6 @@ public class ReadCVS {
                 relations[in] = relations[in].trim();}
 
             try {
-                /*pStmnt.setInt(1,Integer.parseInt(relations[0]));
-                  pStmnt.setInt(2,Integer.parseInt(relations[1]));
-                  pStmnt.setString(3,relations[2]);*/
 
                 if(!relations[0].equals("?")){pStmnt.setInt(1,Integer.parseInt(relations[0]));}
                 else                    {pStmnt.setNull(1,Types.INTEGER);}
@@ -242,8 +225,6 @@ public class ReadCVS {
             for (int in=0 ; in < ownedcars.length ; in++){ 
                 ownedcars[in] = ownedcars[in].trim();}
 
-            // TODO 
-            if (Integer.parseInt(ownedcars[0]) >= 1000) {continue;}
             try{
                 if(!ownedcars[0].equals("?")){pStmnt.setInt(1,Integer.parseInt(ownedcars[0]));}
                 else                    {pStmnt.setNull(1,Types.INTEGER);}
