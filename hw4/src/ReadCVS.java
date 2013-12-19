@@ -14,7 +14,7 @@ public class ReadCVS {
 
         ReadCVS obj = new ReadCVS();
 
-        String csvFile = "../" + fileName;
+        String csvFile = "./" + fileName;
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
@@ -23,25 +23,25 @@ public class ReadCVS {
             PreparedStatement pStmnt = null;
             br = new BufferedReader(new FileReader(csvFile));
 
-            if (csvFile.equals("../ex4.data.cars.csv") &&
+            if (csvFile.equals("./ex4.data.cars.csv") &&
                     table.equals("cars")) {
 
                 // UPDATING CARS TABLES!!
                 insertCars(pStmnt,br,conn,table,cvsSplitBy);
 
-            } else if (csvFile.equals("../ex4.data.persons.csv") &&
+            } else if (csvFile.equals("./ex4.data.persons.csv") &&
                     table.equals("persons")) {
 
                 // UPDATING PERSONS TABLES!!
                 insertPersons(pStmnt,br,conn,table,cvsSplitBy);
 
-            } else if (csvFile.equals("../ex4.data.relations.csv") &&
+            } else if (csvFile.equals("./ex4.data.relations.csv") &&
                     table.equals("relations")) {
 
                 // UPDATING REALTIONS TABLES!!
                 insertRelations(pStmnt,br,conn,table,cvsSplitBy);
 
-            } else if (csvFile.equals("../ex4.data.car.owned.by.people.csv") &&
+            } else if (csvFile.equals("./ex4.data.car.owned.by.people.csv") &&
                     table.equals("cars_owned_by_people")) {
 
                 // UPDATING CARS OWNED BY PEOPLE TABLES!!
@@ -49,11 +49,12 @@ public class ReadCVS {
                     }
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("In Parsing files(sql) - " + e.getMessage());
         }catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("In Parsing files(file not found) - " + e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("In Parsing files(IO) - " + e.getMessage());
+
         }
     }
 
